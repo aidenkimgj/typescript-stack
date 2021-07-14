@@ -4,8 +4,8 @@ type Data = {
 
 interface Stack {
   getSize(): number;
-  push(value: string): void;
-  pop(): string;
+  push(toPush: Data): void;
+  pop(): Data;
   isEmpty(): boolean;
 }
 
@@ -13,11 +13,12 @@ interface List {
   getSize(): number;
   add(toAdd: Data): boolean;
   remove(index: number): Data;
+  retrieve(index: number): Data;
   isEmpty(): boolean;
 }
 
 class MyNode {
-  private next: MyNode;
+  private next: MyNode | null | undefined;
   constructor(private data: Data) {}
 
   get nodeData(): Data {
@@ -44,6 +45,18 @@ class MyList implements List {
   getSize(): number {
     return this.size;
   }
+  retrieve(index: number): Data {
+    if (index >= this.size) {
+      throw new Error('Index is out of bounds');
+    }
+    let tempNode: MyNode = this.head;
+
+    for (let i: number = 0; i < index; i++) {
+      tempNode = tempNode.nextNode;
+    }
+    return tempNode.nodeData;
+  }
+
   add(toAdd: Data): boolean {
     try {
       const newNode = new MyNode(toAdd);
@@ -51,17 +64,13 @@ class MyList implements List {
       if (this.isEmpty()) {
         newNode.nextNode = this.head;
         this.head = newNode;
-        console.log('data', newNode.nodeData);
       } else {
-        console.log('hello');
         let lastNode: MyNode = this.head;
         for (let i: number = 0; i < this.size - 1; i++) {
           lastNode = lastNode.nextNode;
         }
-        console.log('읽어?');
-        console.log('yes', newNode.nodeData);
+
         lastNode.nextNode = newNode;
-        console.log('data2', lastNode.nextNode.nodeData);
       }
       this.size++;
       return true;
@@ -70,38 +79,71 @@ class MyList implements List {
     }
   }
   remove(index: number): Data {
-    try {
-      if (index === 0) {
-        const tempNode: MyNode = this.head;
-        this.head = tempNode.nextNode;
-        tempNode.nextNode = null;
-        this.size--;
-        return tempNode.nodeData;
-      } else {
-        let preNode = this.head;
-        let targetNode = preNode.nextNode;
-        for (let i: number = 0; i < index - 1; i++) {
-          preNode = preNode.nextNode;
-          targetNode = preNode.nextNode;
-        }
-        preNode.nextNode = targetNode.nextNode;
-        targetNode.nextNode = null;
-        this.size--;
-        return targetNode.nodeData;
+    if (index >= this.size) {
+      throw new Error('Index is out of bounds');
+    }
+    if (index === 0) {
+      const tempNode: MyNode = this.head;
+      this.head = tempNode.nextNode;
+      tempNode.nextNode = null;
+      this.size--;
+      return tempNode.nodeData;
+    } else {
+      let preNode = this.head;
+      let targetNode = preNode.nextNode;
+      for (let i: number = 0; i < index - 1; i++) {
+        preNode = preNode.nextNode;
+        targetNode = preNode.nextNode;
       }
-    } catch (e) {}
+      preNode.nextNode = targetNode.nextNode;
+      targetNode.nextNode = null;
+      this.size--;
+      return targetNode.nodeData;
+    }
   }
   isEmpty(): boolean {
     return this.size === 0;
   }
 }
 
-const list = new MyList();
+class MyStack implements Stack {
+  constructor(private myList: List) {}
+  getSize(): number {
+    return this.myList.getSize();
+  }
+  push(toPush: Data): void {
+    this.myList.add(toPush);
+  }
+  pop(): Data {
+    return this.myList.remove(this.myList.getSize() - 1);
+  }
+  isEmpty(): boolean {
+    return this.myList.isEmpty();
+  }
+}
 
-console.log(list.getSize());
-list.add({ value: 'hello' });
-console.log(list.getSize());
-list.add({ value: 'world' });
-console.log(list.getSize());
-console.log(list.remove(0));
-console.log(list.getSize());
+const list = new MyList();
+const stack = new MyStack(list);
+
+console.log('list size', list.getSize());
+console.log('stack size', stack.getSize());
+
+stack.push({ value: 'Aiden' });
+
+console.log('get data', list.retrieve(0));
+console.log('list size', list.getSize());
+console.log('stack size', stack.getSize());
+
+stack.push({ value: 'Jamie' });
+console.log('get data', list.retrieve(1));
+stack.push({ value: '' });
+console.log('get data', list.retrieve(2));
+
+console.log('list size', list.getSize());
+console.log('stack size', stack.getSize());
+
+const ex = stack.pop();
+console.log('pop data', ex);
+
+console.log('list size', list.getSize());
+console.log('stack size', stack.getSize());
