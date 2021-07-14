@@ -18,7 +18,7 @@ interface List {
 }
 
 class MyNode {
-  private next: MyNode | null | undefined;
+  private next: MyNode | null;
   constructor(private data: Data) {}
 
   get nodeData(): Data {
@@ -39,7 +39,7 @@ class MyNode {
 }
 
 class MyList implements List {
-  private head: MyNode = null;
+  private head?: MyNode;
   private size: number = 0;
 
   getSize(): number {
@@ -79,9 +79,10 @@ class MyList implements List {
     }
   }
   remove(index: number): Data {
-    if (index >= this.size) {
+    if (index >= this.size || index < 0) {
       throw new Error('Index is out of bounds');
     }
+
     if (index === 0) {
       const tempNode: MyNode = this.head;
       this.head = tempNode.nextNode;
